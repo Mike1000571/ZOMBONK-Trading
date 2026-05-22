@@ -1,2 +1,0 @@
-# ZOMBONK-Trading-Place
-Trade
