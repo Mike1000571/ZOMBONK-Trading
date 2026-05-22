@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zombonk VR - Trading Plaza</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --orange: #d67c3f;
+            --gold: #d4af37;
+            --dark-bg: #1a1a1a;
+            --darker-bg: #0f0f0f;
+            --text-light: #ffffff;
+            --item-slot: #e8e8e8;
+            --green-accent: #00ff41;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: var(--dark-bg);
+            color: var(--text-light);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            padding-bottom: 80px;
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            color: var(--text-light);
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .subtitle {
+            color: #888;
+            font-size: 0.9em;
+        }
+
+        /* Trades Grid */
+        .trades-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .trade-card {
+            border: 2px solid var(--orange);
+            border-radius: 8px;
+            padding: 15px;
+            background: rgba(255, 140, 0, 0.05);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .trade-card:hover {
+            border-color: var(--gold);
+            box-shadow: 0 0 15px rgba(255, 140, 0, 0.3);
+            transform: translateY(-5px);
+        }
+
+        .room-code {
+            color: var(--gold);
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .trade-exchange {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .trade-offering,
+        .trade-wants {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .exchange-label {
+            font-size: 0.75em;
+            color: #999;
+            text-transform: uppercase;
+            margin-bottom: 3px;
+        }
+
+        .exchange-items {
+            color: var(--text-light);
+            font-size: 0.85em;
+            font-weight: bold;
+        }
+
+        .exchange-arrow {
+            color: var(--gold);
+            font-size: 1.2em;
+            flex-shrink: 0;
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--darker-bg);
+            border-top: 2px solid var(--orange);
+            z-index: 100;
+            display: flex;
+            justify-content: flex-start;
+            gap: 15px;
+            padding: 12px 20px;
+        }
+
+        .nav-item {
+            padding: 8px 20px;
+            border: 1px solid var(--orange);
+            background: transparent;
+            color: var(--orange);
+            cursor: pointer;
+            font-size: 0.85em;
+            font-weight: bold;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            font-family: Arial, sans-serif;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background: var(--orange);
+            color: var(--dark-bg);
+            box-shadow: 0 0 15px rgba(255, 140, 0, 0.5);
+        }
+
+        /* Pages */
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        /* Make Trade Page */
+        .make-trade-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .trade-form {
+            border: 3px solid var(--orange);
+            border-radius: 10px;
+            padding: 30px;
+            background: rgba(255, 140, 0, 0.05);
+        }
+
+        .form-title {
+            font-size: 1.3em;
+            color: var(--orange);
+            margin-bottom: 30px;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        .form-section {
+            margin-bottom: 30px;
+        }
+
+        .form-label {
+            font-size: 0.9em;
+            color: var(--gold);
+            text-transform: uppercase;
+            margin-bottom: 15px;
+            font-weight: bold;
+            display: block;
+        }
+
+        .item-slots {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .item-slot {
+            aspect-ratio: 1;
+            background: var(--item-slot);
+            border-radius: 8px;
+            border: 3px solid transparent;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .item-slot:hover {
+            border-color: var(--green-accent);
+        }
+
+        .item-slot.selected {
+            border-color: var(--green-accent);
+            box-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+        }
+
+        .add-banks {
+            padding: 10px 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid #444;
+            border-radius: 5px;
+            color: #999;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s ease;
+            display: inline-block;
+            margin-top: 5px;
+        }
+
+        .add-banks:hover {
+            color: var(--text-light);
+            border-color: #666;
+        }
+
+        .bonks-input {
+            width: 100%;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid #444;
+            border-radius: 5px;
+            color: var(--text-light);
+            font-family: Arial, sans-serif;
+            margin-bottom: 10px;
+            transition: all 0.2s ease;
+        }
+
+        .bonks-input:focus {
+            outline: none;
+            border-color: var(--orange);
+            background: rgba(214, 124, 63, 0.1);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid #444;
+            border-radius: 5px;
+            color: var(--text-light);
+            font-family: Arial, sans-serif;
+            margin-bottom: 10px;
+            transition: all 0.2s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--orange);
+            background: rgba(255, 140, 0, 0.1);
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
+            background: var(--orange);
+            color: var(--dark-bg);
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .submit-btn:hover {
+            box-shadow: 0 0 20px rgba(255, 140, 0, 0.7);
+            transform: translateY(-2px);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .trades-grid {
+                grid-template-columns: 1fr;
+            }
+
+            nav {
+                flex-direction: column;
+                gap: 10px;
+                padding: 15px;
+            }
+
+            .nav-item {
+                width: 100%;
+                text-align: center;
+            }
+
+            .item-slots {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Zombonk VR Trading Plaza</h1>
+            <p class="subtitle">Made by MK.8.8.8</p>
+        </header>
+
+        <!-- HOME PAGE - Fluent Trades -->
+        <div class="page active" id="home">
+            <div class="trades-grid" id="tradesContainer">
+                <!-- Trades will be dynamically added here -->
+            </div>
+            <div id="emptyState" style="text-align: center; padding: 40px; color: #999;">
+                <p>No trades yet. Create one by clicking MAKE TRADE!</p>
+            </div>
+        </div>
+
+        <!-- MAKE TRADE PAGE -->
+        <div class="page" id="make-trade">
+            <div class="make-trade-container">
+                <div class="trade-form">
+                    <div class="form-title">Create New Trade</div>
+
+                    <div class="form-section">
+                        <label class="form-label">Room Code (4 Numbers)</label>
+                        <input type="text" id="roomCode" placeholder="e.g., 1234" maxlength="4" class="form-input" inputmode="numeric">
+                    </div>
+
+                    <div class="form-section">
+                        <label class="form-label">You Are Offering</label>
+                        <input type="text" placeholder="What items are you offering?" class="form-input">
+                        <label class="form-label" style="margin-top: 10px;">Bonks</label>
+                        <input type="number" placeholder="Amount of Bonks" class="bonks-input" min="0">
+                    </div>
+
+                    <div class="form-section">
+                        <label class="form-label">You Want</label>
+                        <input type="text" placeholder="What items are you looking for?" class="form-input">
+                        <label class="form-label" style="margin-top: 10px;">Bonks</label>
+                        <input type="number" placeholder="Amount of Bonks" class="bonks-input" min="0">
+                    </div>
+
+                    <button class="submit-btn" onclick="postTrade()">POST TRADE</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- NAVIGATION AT BOTTOM -->
+    <nav>
+        <button class="nav-item active" onclick="switchPage('home')">HOME</button>
+        <button class="nav-item" onclick="switchPage('make-trade')">MAKE TRADE</button>
+    </nav>
+
+    <script>
+        // Load trades from local storage (shared for all users on this page)
+        function loadTrades() {
+            const trades = JSON.parse(localStorage.getItem('zombonkTrades')) || [];
+            const container = document.getElementById('tradesContainer');
+            const emptyState = document.getElementById('emptyState');
+            
+            container.innerHTML = '';
+            
+            if (trades.length === 0) {
+                emptyState.style.display = 'block';
+            } else {
+                emptyState.style.display = 'none';
+                trades.forEach((trade, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'trade-card';
+                    card.innerHTML = `
+                        <div class="room-code">ROOM CODE: ${trade.roomCode}</div>
+                        <div class="trade-exchange">
+                            <div class="trade-offering">
+                                <div class="exchange-label">Offering</div>
+                                <div class="exchange-items">${trade.offering}${trade.offeringBonks ? ' + ' + trade.offeringBonks + ' Bonks' : ''}</div>
+                            </div>
+                            <div class="exchange-arrow">→</div>
+                            <div class="trade-wants">
+                                <div class="exchange-label">Wants</div>
+                                <div class="exchange-items">${trade.wanting}${trade.wantingBonks ? ' + ' + trade.wantingBonks + ' Bonks' : ''}</div>
+                            </div>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+            }
+        }
+
+        function switchPage(pageId) {
+            // Hide all pages
+            const pages = document.querySelectorAll('.page');
+            pages.forEach(page => page.classList.remove('active'));
+
+            // Remove active from all nav items
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach(item => item.classList.remove('active'));
+
+            // Show selected page
+            document.getElementById(pageId).classList.add('active');
+
+            // Activate nav item
+            event.target.classList.add('active');
+
+            // Load trades when switching to home
+            if (pageId === 'home') {
+                loadTrades();
+            }
+        }
+
+        function postTrade() {
+            const roomCode = document.getElementById('roomCode').value;
+            const offeringItems = document.querySelectorAll('.form-input')[0].value;
+            const offeringBonks = document.querySelectorAll('.bonks-input')[0].value || 0;
+            const wantingItems = document.querySelectorAll('.form-input')[1].value;
+            const wantingBonks = document.querySelectorAll('.bonks-input')[1].value || 0;
+
+            if (!roomCode) {
+                alert('Please enter a room code (4 numbers)');
+                return;
+            }
+
+            if (roomCode.length !== 4) {
+                alert('Room code must be exactly 4 numbers');
+                return;
+            }
+
+            if (!offeringItems && !offeringBonks) {
+                alert('Please enter what you are offering');
+                return;
+            }
+
+            if (!wantingItems && !wantingBonks) {
+                alert('Please enter what you want');
+                return;
+            }
+
+            // Create trade object
+            const newTrade = {
+                roomCode: roomCode,
+                offering: offeringItems,
+                offeringBonks: parseInt(offeringBonks),
+                wanting: wantingItems,
+                wantingBonks: parseInt(wantingBonks),
+                timestamp: new Date().getTime()
+            };
+
+            // Load existing trades
+            const trades = JSON.parse(localStorage.getItem('zombonkTrades')) || [];
+            
+            // Add new trade
+            trades.push(newTrade);
+            
+            // Save to local storage
+            localStorage.setItem('zombonkTrades', JSON.stringify(trades));
+
+            alert('Trade posted successfully!\nRoom Code: ' + roomCode);
+            
+            // Reset form
+            document.getElementById('roomCode').value = '';
+            document.querySelectorAll('.form-input').forEach(input => input.value = '');
+            document.querySelectorAll('.bonks-input').forEach(input => input.value = '');
+
+            // Switch to home to show new trade
+            document.getElementById('home').classList.add('active');
+            document.getElementById('make-trade').classList.remove('active');
+            document.querySelectorAll('.nav-item')[0].classList.add('active');
+            document.querySelectorAll('.nav-item')[1].classList.remove('active');
+            loadTrades();
+        }
+
+        // Room code validation - numbers only
+        const roomCodeInput = document.getElementById('roomCode');
+        if (roomCodeInput) {
+            roomCodeInput.addEventListener('input', function(e) {
+                this.value = this.value.replace(/[^0-9]/g, '');
+            });
+
+            roomCodeInput.addEventListener('keypress', function(e) {
+                if (!/[0-9]/.test(e.key)) {
+                    e.preventDefault();
+                }
+            });
+        }
+
+        // Load trades on page load
+        window.addEventListener('load', loadTrades);
+    </script>
+</body>
+</html>
